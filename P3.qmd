@@ -1,0 +1,119 @@
+---
+title: "Project 3"
+author: "Your Name Here"
+format: 
+  html:
+    self-contained: true
+    echo: true
+    message: false
+    warning: false
+    error: true # IMPORTANT NOTE - this makes the file render even if there is an error. it is imperative that you check your .html document *before submission* to make sure that it has all results in it.
+editor: source
+---
+
+**This week you again analyze data from the Jackson Heart Study (JHS). You can find the data on Canvas, in the Week 1 module. For full credit, you must include all code chunks and R output backing up your responses.**
+
+**0. Import the JHS data.**
+
+```{r}
+
+```
+
+
+**1a. Model diabetic status (*Diabetes*; 0=non-diabetic, 1=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high), and the interactions between (1) weight and hypertension and (2) weight and fasting HDL categorization. Remember to report the resulting model.**
+
+```{r}
+
+```
+
+**1b. Perform the appropriate hypothesis test to determine if the interaction between weight and hypertension status is significant. Test at the $\alpha=0.05$ level.**
+
+```{r}
+
+```
+
+**1c. Perform the appropriate hypothesis test to determine if the interaction between weight and fasting HDL categorization is significant. Test at the $\alpha=0.05$ level.**
+
+```{r}
+
+```
+
+**1d. Create the following models (i.e., plug in the following values and algebraically simplify): (1) weight of 70 kg, (2) weight of 90 kg, and (3) weight of 110 kg.  Remember to report the resulting models.**
+
+
+
+**1e. Find the odds ratios for the models in 1d.**
+
+```{r}
+
+```
+
+**1f. Provide brief interpretations of the odds ratios found in one model (your choice) in 1e.**
+
+**1g. Construct an appropriate data visualization to help with explaining the model results. Diabetic status should be on the y-axis, age should be on the x-axis, and use the regression lines constructed in 1d.**
+
+```{r}
+
+```
+
+**2a. Using ordinal logistic regression, model diabetic status (*diab3cat*; 0=non-diabetic, 1=pre-diabetic, 2=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high). Remember to report the resulting model.**
+
+```{r}
+
+```
+
+**2b. Which predictors, if any, are significant predictors of diabetic status?**
+
+```{r}
+
+```
+
+**2c. Find the odds ratios and corresponding 95% CIs for the predictors.**
+
+```{r}
+
+```
+
+**2d. Provide brief interpretations of the odds ratios found in 2c.**
+
+
+
+**3a. Using nominal/multinomial logistic regression, model diabetic status (*diab3cat*; 0=non-diabetic, 1=pre-diabetic, 2=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high). Remember to report the resulting model.**
+
+```{r}
+
+```
+
+**3b. Which predictors, if any, are significant predictors of diabetic status?**
+
+```{r}
+
+```
+
+**3c. Find the odds ratios and corresponding 95% CIs for the predictors.**
+
+```{r}
+
+```
+
+**3d. Provide brief interpretations of the odds ratios found in 3c.**
+
+
+
+**4a. Consider the proportional odds assumption for ordinal logistic regression. Explain the proportional odds assumption to your supervisor, who is not a statistician or data scientist.**
+
+
+
+**4b. Use the appropriate hypothesis test to determine if we should use model 2a or model 3a when reporting on diabetic status in terms of non-diabetic, pre-diabetic, and diabetic.**
+
+```{r}
+
+```
+
+**4e. Extra credit! Construct a data visualization for the model chosen in 4b to help explain the model's results.**
+
+```{r}
+
+```
+
+**5. Required for graduate students / extra credit for undergraduate students: Write a paragraph to summarize the analyses in this project, written such that a non-quantitative person could understand.**

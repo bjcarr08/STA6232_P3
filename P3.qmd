@@ -1,119 +1,508 @@
 ---
 title: "Project 3"
-author: "Your Name Here"
+subtitle: "STA6232 - Stats for Data Science II"
+author: "Brandy Carr"
 format: 
   html:
+    grid: 
+      sidebar-width: 0px
+      body-width: 1400px
+      margin-width: 125px
     self-contained: true
     echo: true
     message: false
     warning: false
-    error: true # IMPORTANT NOTE - this makes the file render even if there is an error. it is imperative that you check your .html document *before submission* to make sure that it has all results in it.
+    error: true
+    toc: true
+    highlight-style: highlight.theme
 editor: source
 ---
 
+<head>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+
+<style>
+
+header {
+color: #000000 !important;
+}
+
+h1, h2, h3, h4 {
+color: #1A1A1A !important;
+}
+
+b, strong {
+color: #3A3A3A !important;
+}
+
+body {
+color: #7C6FBF !important;
+font-family: Montserrat;
+}
+
+pre.sourceCode {
+background-color: #F9F9F9 !important;
+border: 1px solid #CDC8B1;
+}
+
+pre>code.sourceCode {
+color: #3B3A3A !important;
+background-color: #F9F9F9 !important;
+font-size: 14px !important;
+font-weight: 300 !important;
+}
+
+pre>code, div.sourceCode {
+font-size: 14px !important;
+font-weight: 300 !important;
+color: #9A9A8A !important;
+background-color: #FFFFFF !important;
+} 
+
+code {
+color: #6D5FB0 !important;
+background-color: #E5E9FF !important;
+font-size: 14px !important;
+font-weight: 600 !important;
+padding: 0.5em !important;
+}
+
+</style>
+
+</head>
+
+</br>
+
 **This week you again analyze data from the Jackson Heart Study (JHS). You can find the data on Canvas, in the Week 1 module. For full credit, you must include all code chunks and R output backing up your responses.**
 
-**0. Import the JHS data.**
+</br>
+
+</br>
+
+## 0
+
+**Import the JHS data.**
+
+```{r}
+library(tidyverse)
+JHS <- haven::read_sas("analysis1.sas7bdat")
+```
+
+</br>
+
+</br>
+
+## 1
+
+**1A.  Model diabetic status (*Diabetes*; 0=non-diabetic, 1=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high), and the interactions between (1) weight and hypertension and (2) weight and fasting HDL categorization. Remember to report the resulting model.**
+
+```{r}
+# subset data & removed incomplete cases
+JHS1 <- JHS %>% select(Diabetes, age, weight, HTN, hdl3cat) %>% na.omit()
+
+# factored variable hdl3cat
+JHS1$HDL <- factor(JHS1$hdl3cat, levels=c(0,1,2), labels=c("low","norm","high"))
+
+# full model
+m1 <- glm(Diabetes ~ age + HDL + HTN + weight + weight:HTN + weight:HDL, data=JHS1, family="binomial"(link="logit"))
+
+# reduced model (intercept only)
+reduced <- glm(Diabetes ~ 1, data=JHS1, family="binomial"(link="logit"))
+
+# tests significance of the m1 regression line
+anova(reduced, m1, test="LRT")
+
+# tests significance of each predictor
+car::Anova(m1, type=3)
+
+# tests significance of all terms (pairwise)
+summary(m1)
+```
+
+`FULL MODEL`
+
+<div style="color: #6D5FB0; background-color: #E5E9FF; border: 1px solid #9083D3; padding: 10px; margin: 0px;">
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 0.03(weight) - 0.01(HTN:weight) + 0.002(HDL_{norm}:weight) - 0.01(HDL_{high}:weight)}$$ {#eq-1A}
+
+</div>
+
+</br>
+
+`COMMENTS`
+
+The full model predicts Diabetes significantly better than the intercept only (reduced) model.
+
+HDL is NOT a significant predictor of Diabetes & neither is it's interaction with weight.
+
+</br>
+
+</br>
+
+**1B.  Perform the appropriate hypothesis test to determine if the interaction between weight and hypertension status is significant. Test at the $\alpha=0.05$ level.**
+
+```{r}
+# binary X continuous
+round(summary(m1)$coeff[drop=F, "HTN:weight", c(3,4)], 4)
+```
+
+`Hypotheses`
+
+$H_{0}$ : $\beta_{HTN:weight} = 0$
+
+$H_{1}$ : $\beta_{HTN:weight} \ne 0$
+
+`Test Statistic`  
+
+$z_{0} = -2.0769$
+
+`P-Value`  
+
+$p < 0.0378$
+
+`Rejection Region`  
+
+Reject $H_{0}$ if $p < \alpha;$ $\phantom0 \alpha = 0.05$
+
+`Conclusion`  
+
+Reject $H_{0}.$
+
+There is sufficient evidence to suggest that the interaction between hypertension status and weight (*HTN:weight*) significantly predicts *Diabetes*.
+
+</br>
+
+</br>
+
+**1C.  Perform the appropriate hypothesis test to determine if the interaction between fasting HDL categorization and weight (*HDL:weight*)is significant. Test at the $\alpha=0.05$ level.**
+
+```{r}
+# categotical(c=3) X continuous
+round(car::Anova(m1, type=3)[drop=F, "HDL:weight",], 4)
+```
+
+`Hypotheses`
+
+$H_{0}$ : $\beta_{HDL_{norm}:weight} = \beta_{HDL_{high}:weight} = 0$
+
+$H_{1}$ : at least one $\beta_{i} \ne 0$
+
+`Test Statistic`  
+
+$\chi^2 = 2.9360$
+
+`P-Value`  
+
+$p = 0.2304$
+
+`Rejection Region`  
+
+Reject $H_{0}$ if $p < \alpha;$ $\phantom0 \alpha = 0.05$
+
+`Conclusion`  
+
+Fail to reject $H_{0}.$
+
+There is NOT sufficient evidence to suggest that the relationship between *Diabetes* and *weight* depends on fasting HDL categorization (*HDL*).
+
+</br>
+
+</br>
+
+**1D.  Create the following models (i.e., plug in the following values and algebraically simplify): (1) weight of 70 kg, (2) weight of 90 kg, and (3) weight of 110 kg.  Remember to report the resulting models.**
+
+$\small{\text{***Displaying rounded coefficients in models below, but used un-rounded values for calculations on the back end}}$
+
+`weight = 70kg`
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 0.03(70) - 0.01(HTN:70) + 0.002(HDL_{norm}:70) - 0.01(HDL_{high}:70)}$$ 
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 2.25 - 0.82(HTN) + 0.15(HDL_{norm}) - 0.69(HDL_{high})}$$
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -5.155 + 0.042(age) - 0.455(HDL_{norm}) - 0.310(HDL_{high}) + 1.300(HTN)}$$ {#eq-1D-1}
+
+`weight = 90kg`
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 0.03(90) - 0.01(HTN:90) + 0.002(HDL_{norm}:90) - 0.01(HDL_{high}:90)}$$
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 2.89 - 1.06(HTN) + 0.19(HDL_{norm}) - 0.88(HDL_{high})}$$
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -4.512 + 0.042(age) - 0.414(HDL_{norm}) - 0.506(HDL_{high}) + 1.065(HTN)}$$ {#eq-1D-2}
+
+`weight = 110kg`
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 0.03(110) - 0.01(HTN:110) + 0.002(HDL_{norm}:110) - 0.01(HDL_{high}:110)}$$ 
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 3.54 - 1.29(HTN) + 0.23(HDL_{norm}) - 1.08(HDL_{high})}$$
+
+$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -3.870 + 0.042(age) - 0.372(HDL_{norm}) - 0.702(HDL_{high}) + 0.831(HTN)}$$ {#eq-1D-3}
+
+</br>
+
+</br>
+
+**1E.  Find the odds ratios for the models in 1d.**
+
+```{r}
+Models = data.frame(weight_70kg = c(-5.115, 0.042, -0.455, -0.310, 1.300),
+                    weight_90kg = c(-4.512, 0.042, -0.414, -0.506, 1.065),
+                    weight_110kg = c(-3.870, 0.042, -0.372, -0.702, 0.831))
+rownames(Models) = c("Intercept", "age", "HDLnorm", "HDLhigh", "HTN")
+Models                
+```
+
+```{r}
+# Model 1: weight = 70kg
+Models[-1,] %>% 
+  select(weight_70kg) %>% 
+  mutate(OddsRatio = round(exp(weight_70kg), 1), 
+         "OddsRatio%" = paste0(round(100*(exp(weight_70kg)-1), 1), "%"))
+```
+
+```{r}
+# Model 2: weight = 90kg
+Models[-1,] %>% 
+  select(weight_90kg) %>% 
+  mutate(OddsRatio = round(exp(weight_90kg), 1), 
+         "OddsRatio%" = paste0(round(100*(exp(weight_90kg)-1), 1), "%"))
+```
+
+```{r}
+# Model 3: weight = 110kg
+Models[-1,] %>% 
+  select(weight_110kg) %>% 
+  mutate(OddsRatio = round(exp(weight_110kg), 1), 
+         "OddsRatio%" = paste0(round(100*(exp(weight_110kg)-1), 1), "%"))
+```
+
+</br>
+
+</br>
+
+**1F.  Provide brief interpretations of the odds ratios found in one model (your choice) in 1e.**
+
+Regardless of weight:
+
+- For every 1 year increase in age, the odds of having Diabetes increases by 4.3%.
+
+</br>
+
+For participants who weighed 70 kg (see @eq-1D-1 for the model):
+
+- The odds of having Diabetes is 3.7 times higher for hypertensive participants than it is for normotensive participants.
+- As compared to a fasting HDL categorization of low:
+  - The odds of having Diabetes for a fasting HDL categorization of normal are decreased by 36.6%.
+  - The odds of having Diabetes for a fasting HDL categorization of high are decreased by 26.7%.
+
+</br>
+
+For participants who weighed 90 kg (see @eq-1D-2 for the model):
+
+- The odds of having Diabetes is 2.9 times higher for hypertensive participants than it is for normotensive participants.
+- As compared to a fasting HDL categorization of low:
+  - The odds of having Diabetes for a fasting HDL categorization of normal are decreased by 33.9%.
+  - The odds of having Diabetes for a fasting HDL categorization of high are decreased by 39.7%.
+
+</br>
+
+For participants who weighed 110 kg (see @eq-1D-3 for the model):
+
+- The odds of having Diabetes is 2.3 times higher for hypertensive participants than it is for normotensive participants.
+- As compared to a fasting HDL categorization of low:
+  - The odds of having Diabetes for a fasting HDL categorization of normal are decreased by 31.1%.
+  - The odds of having Diabetes for a fasting HDL categorization of high are decreased by 50.4%.
+  
+</br>
+
+</br>
+
+**1G.  Construct an appropriate data visualization to help with explaining the model results. Diabetic status should be on the y-axis, age should be on the x-axis, and use the regression lines constructed in 1d.**
+
+```{r}
+#| eval: false
+#| fig-align: left
+#| out-width: 90%
+#| fig-asp: 0.5
+#| fig-dpi: 300
+library(fastDummies)
+JHS1 <- JHS1 %>%
+  dummy_cols(select_columns = c("HDL")) %>%
+  mutate(p_70kg = exp(Models[1,1] + Models[2,1]*age + Models[3,1]*HDL_norm + Models[4,1]*HDL_high + Models[5,1]*HTN) / 
+           (1 + exp(Models[1,1] + Models[2,1]*age + Models[3,1]*HDL_norm + Models[4,1]*HDL_high + Models[5,1]*HTN)),
+         p_90kg = exp(Models[1,2] + Models[2,2]*age + Models[3,2]*HDL_norm + Models[4,2]*HDL_high + Models[5,2]*HTN) / 
+           (1 + exp(Models[1,2] + Models[2,2]*age + Models[3,2]*HDL_norm + Models[4,2]*HDL_high + Models[5,2]*HTN)),
+         p_110kg = exp(Models[1,3] + Models[2,3]*age + Models[3,3]*HDL_norm + Models[4,3]*HDL_high + Models[5,3]*HTN) / 
+           (1 + exp(Models[1,3] + Models[2,3]*age + Models[3,3]*HDL_norm + Models[4,3]*HDL_high + Models[5,3]*HTN)))
+
+JHS1$HTN2 <- factor(JHS1$HTN, levels=c(0,1), labels=c("Normotensive", "Hypertensive"))
+JHS1$HDL2 <- factor(JHS1$hdl3cat, levels=c(0,1,2), labels=c("Low HDL", "Normal HDL", "High HDL"))
+
+JHS1 %>% 
+  group_by(HTN2, HDL2) %>% 
+  ggplot(aes(x=age, y=Diabetes)) + 
+  geom_point(alpha=0.2, size=1) +
+  geom_line(aes(y=p_70kg), color = "#00BBA0", linewidth = 0.6, linetype = 1) +
+  geom_line(aes(y=p_90kg), color = "#FA962D", linewidth = 0.6, linetype = 1) +
+  geom_line(aes(y=p_110kg), color = "#C71585", linewidth = 0.6, linetype = 1) +
+  labs(x = "Age", y = "Probability of Diabetes") +
+  facet_grid(HTN2 ~ HDL2) +
+  theme_bw(base_size = 5.5) +
+  theme(title=element_text(face="bold"), legend.position="none")
+```
+
+<div style="color: #C71585; background-color: #FEEAF2; border: 1px solid #C71585; padding: 0px; margin-left: 50px; margin-right: 175px; margin-top: 2px; margin-bottom: 2px;"> $$\large{\text{weight = 110 kg}}$$ </div>
+
+<div style="color: #FA962D; background-color: #FFF5F0; border: 1px solid #FA962D; padding: 0px; margin-left: 50px; margin-right: 175px; margin-top: 2px; margin-bottom: 2px;"> $$\large{\text{weight = 90 kg}}$$ </div>
+
+<div style="color: #00BBA0; background-color: #E9FFF9; border: 1px solid #00BBA0; padding: 0px; margin-left: 50px; margin-right: 175px; margin-top: 2px; margin-bottom: 2px;"> $$\large{\text{weight = 70 kg}}$$ </div>
+
+```{r}
+#| echo: false
+#| fig-align: left
+#| out-width: 90%
+#| fig-asp: 0.5
+#| fig-dpi: 300
+library(fastDummies)
+JHS1 <- JHS1 %>%
+  dummy_cols(select_columns = c("HDL")) %>%
+  mutate(p_70kg = exp(Models[1,1] + Models[2,1]*age + Models[3,1]*HDL_norm + Models[4,1]*HDL_high + Models[5,1]*HTN) / 
+           (1 + exp(Models[1,1] + Models[2,1]*age + Models[3,1]*HDL_norm + Models[4,1]*HDL_high + Models[5,1]*HTN)),
+         p_90kg = exp(Models[1,2] + Models[2,2]*age + Models[3,2]*HDL_norm + Models[4,2]*HDL_high + Models[5,2]*HTN) / 
+           (1 + exp(Models[1,2] + Models[2,2]*age + Models[3,2]*HDL_norm + Models[4,2]*HDL_high + Models[5,2]*HTN)),
+         p_110kg = exp(Models[1,3] + Models[2,3]*age + Models[3,3]*HDL_norm + Models[4,3]*HDL_high + Models[5,3]*HTN) / 
+           (1 + exp(Models[1,3] + Models[2,3]*age + Models[3,3]*HDL_norm + Models[4,3]*HDL_high + Models[5,3]*HTN)))
+
+JHS1$HTN2 <- factor(JHS1$HTN, levels=c(0,1), labels=c("Normotensive", "Hypertensive"))
+JHS1$HDL2 <- factor(JHS1$hdl3cat, levels=c(0,1,2), labels=c("Low HDL", "Normal HDL", "High HDL"))
+
+JHS1 %>% 
+  group_by(HTN2, HDL2) %>% 
+  ggplot(aes(x=age, y=Diabetes)) + 
+  geom_point(alpha=0.2, size=1) +
+  geom_line(aes(y=p_70kg), color = "#00BBA0", linewidth = 0.6, linetype = 1) +
+  geom_line(aes(y=p_90kg), color = "#FA962D", linewidth = 0.6, linetype = 1) +
+  geom_line(aes(y=p_110kg), color = "#C71585", linewidth = 0.6, linetype = 1) +
+  labs(x = "Age", y = "Probability of Diabetes") +
+  facet_grid(HTN2 ~ HDL2) +
+  theme_bw(base_size = 5.5) +
+  theme(title=element_text(face="bold"), legend.position="none")
+```
+
+</br>
+
+</br>
+
+## 2
+
+**2A.  Using ordinal logistic regression, model diabetic status (*diab3cat*; 0=non-diabetic, 1=pre-diabetic, 2=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high). Remember to report the resulting model.**
+
+```{r}
+# subset data & removed incomplete cases
+JHS2 <- JHS %>% select(diab3cat, age, weight, HTN, hdl3cat) %>% na.omit()
+
+# factored variables diab3cat, HTN, & hdl3cat
+JHS2$Diabetes <- factor(JHS2$diab3cat, levels=c(0,1,2), labels=c("Non-Diabetic","Pre-Diabetic","Diabetic"))
+JHS2$HTN <- factor(JHS2$HTN, levels=c(0,1), labels=c("Normotensive","Hypertensive"))
+JHS2$HDL <- factor(JHS2$hdl3cat, levels=c(0,1,2), labels=c("Low","Normal","High"))
+
+# ordinal logistic regression model
+m2 <- MASS::polr(Diabetes ~ age + HDL + HTN + weight, data=JHS2, Hess=T)
+summary(m2)
+```
+
+`MODELS`
+
+logit$(P[Y\le \text{Non-Diabetic}])$ = 4.995 + 0.051(age) - 0.296(HDLNormal) - 0.587(HDLHigh) + 0.632(Hypertensive) + 0.025(weight)
+
+logit$(P[Y\le \text{Pre-Diabetic}])$ = 6.960 + 0.051(age) - 0.296(HDLNormal) - 0.587(HDLHigh) + 0.632(Hypertensive) + 0.025(weight)
+
+</br>
+
+</br>
+
+**2B.  Which predictors, if any, are significant predictors of diabetic status?**
+
+```{r}
+car::Anova(m2, type = 3)
+```
+
+All predictors are significant predictors of diabetic status.
+
+</br>
+
+</br>
+
+**2C.  Find the odds ratios and corresponding 95% CIs for the predictors.**
+
+```{r}
+round(exp(coefficients(m2)), 2)
+
+round(exp(confint(m2)), 2)
+```
+
+</br>
+
+</br>
+
+**2D.  Provide brief interpretations of the odds ratios found in 2c.**
+
+</br>
+
+</br>
+
+## 3
+
+**3A.  Using nominal/multinomial logistic regression, model diabetic status (*diab3cat*; 0=non-diabetic, 1=pre-diabetic, 2=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high). Remember to report the resulting model.**
 
 ```{r}
 
 ```
 
+</br>
 
-**1a. Model diabetic status (*Diabetes*; 0=non-diabetic, 1=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high), and the interactions between (1) weight and hypertension and (2) weight and fasting HDL categorization. Remember to report the resulting model.**
-
-```{r}
-
-```
-
-**1b. Perform the appropriate hypothesis test to determine if the interaction between weight and hypertension status is significant. Test at the $\alpha=0.05$ level.**
+**3B.  Which predictors, if any, are significant predictors of diabetic status?**
 
 ```{r}
 
 ```
 
-**1c. Perform the appropriate hypothesis test to determine if the interaction between weight and fasting HDL categorization is significant. Test at the $\alpha=0.05$ level.**
+</br>
+
+**3C.  Find the odds ratios and corresponding 95% CIs for the predictors.**
 
 ```{r}
 
 ```
 
-**1d. Create the following models (i.e., plug in the following values and algebraically simplify): (1) weight of 70 kg, (2) weight of 90 kg, and (3) weight of 110 kg.  Remember to report the resulting models.**
+</br>
 
+**3D.  Provide brief interpretations of the odds ratios found in 3c.**
 
+</br>
 
-**1e. Find the odds ratios for the models in 1d.**
+## 4
 
-```{r}
+**4A.  Consider the proportional odds assumption for ordinal logistic regression. Explain the proportional odds assumption to your supervisor, who is not a statistician or data scientist.**
 
-```
+</br>
 
-**1f. Provide brief interpretations of the odds ratios found in one model (your choice) in 1e.**
-
-**1g. Construct an appropriate data visualization to help with explaining the model results. Diabetic status should be on the y-axis, age should be on the x-axis, and use the regression lines constructed in 1d.**
-
-```{r}
-
-```
-
-**2a. Using ordinal logistic regression, model diabetic status (*diab3cat*; 0=non-diabetic, 1=pre-diabetic, 2=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high). Remember to report the resulting model.**
+**4B. Use the appropriate hypothesis test to determine if we should use model 2a or model 3a when reporting on diabetic status in terms of non-diabetic, pre-diabetic, and diabetic.**
 
 ```{r}
 
 ```
 
-**2b. Which predictors, if any, are significant predictors of diabetic status?**
+</br>
+
+**4 Extra credit! Construct a data visualization for the model chosen in 4b to help explain the model's results.**
 
 ```{r}
 
 ```
 
-**2c. Find the odds ratios and corresponding 95% CIs for the predictors.**
+</br>
 
-```{r}
+## 5
 
-```
-
-**2d. Provide brief interpretations of the odds ratios found in 2c.**
-
-
-
-**3a. Using nominal/multinomial logistic regression, model diabetic status (*diab3cat*; 0=non-diabetic, 1=pre-diabetic, 2=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high). Remember to report the resulting model.**
-
-```{r}
-
-```
-
-**3b. Which predictors, if any, are significant predictors of diabetic status?**
-
-```{r}
-
-```
-
-**3c. Find the odds ratios and corresponding 95% CIs for the predictors.**
-
-```{r}
-
-```
-
-**3d. Provide brief interpretations of the odds ratios found in 3c.**
-
-
-
-**4a. Consider the proportional odds assumption for ordinal logistic regression. Explain the proportional odds assumption to your supervisor, who is not a statistician or data scientist.**
-
-
-
-**4b. Use the appropriate hypothesis test to determine if we should use model 2a or model 3a when reporting on diabetic status in terms of non-diabetic, pre-diabetic, and diabetic.**
-
-```{r}
-
-```
-
-**4e. Extra credit! Construct a data visualization for the model chosen in 4b to help explain the model's results.**
-
-```{r}
-
-```
-
-**5. Required for graduate students / extra credit for undergraduate students: Write a paragraph to summarize the analyses in this project, written such that a non-quantitative person could understand.**
+**Required for graduate students / extra credit for undergraduate students: Write a paragraph to summarize the analyses in this project, written such that a non-quantitative person could understand.**

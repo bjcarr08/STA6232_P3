@@ -436,9 +436,8 @@ All predictors are significant predictors of diabetic status.
 **2C.  Find the odds ratios and corresponding 95% CIs for the predictors.**
 
 ```{r}
-round(exp(coefficients(m2)), 2)
-
-round(exp(confint(m2)), 2)
+OR = round(exp(coefficients(m2)), 2)
+cbind(OR, round(exp(confint(m2)), 2))
 ```
 
 </br>
@@ -446,6 +445,24 @@ round(exp(confint(m2)), 2)
 </br>
 
 **2D.  Provide brief interpretations of the odds ratios found in 2c.**
+
+`age`
+
+For a one year increase in $\text{age}$, the odds in favor of those who are $\text{Pre-Diabetic}$ or lower, as compared to those who are $\text{Diabetic}$, are increased by [$100*(e^{0.0514}-1)$] = 5.3%.
+
+`HDL`
+
+For any fixed response, the estimated odds of those with $\text{Normal HDL}$ is in the $\text{Non-Diabetic}$ direction rather than the $\text{Diabetic}$ direction are [$e^{-0.2963}$] = 0.74 times the estimated odds of those with $\text{Low HDL}$. This is a 26% decrease in odds as compared to those with $\text{Low HDL}$.
+
+For any fixed response, the estimated odds of those with $\text{High HDL}$ is in the $\text{Non-Diabetic}$ direction rather than the $\text{Diabetic}$ direction are [$e^{-0.5873}$] = 0.56 times the estimated odds of those with $\text{Low HDL}$. This is a 44% decrease in odds as compared to those with $\text{Low HDL}$.
+
+`HTN`
+
+For any fixed response, the estimated odds of those with $\text{Hypertension}$ is in the $\text{Non-Diabetic}$ direction rather than the $\text{Diabetic}$ direction are [$e^{0.6321}$] = 1.88 times the estimated odds of those who are $\text{Normotensive}$. This is an 88% increase in odds as compared to those who are $\text{Normotensive}$.
+
+`weight`
+
+For a one lb increase in $\text{weight}$, the odds in favor of those who are $\text{Pre-Diabetic}$ or lower, as compared to those who are $\text{Diabetic}$, are increased by [$100*(e^{0.0246}-1)$] = 2.5%.
 
 </br>
 

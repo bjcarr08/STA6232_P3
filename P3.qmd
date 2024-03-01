@@ -6,8 +6,8 @@ format:
   html:
     grid: 
       sidebar-width: 0px
-      body-width: 1400px
-      margin-width: 125px
+      body-width: 1100px
+      margin-width: 120px
     self-contained: true
     echo: true
     message: false
@@ -80,6 +80,12 @@ padding: 0.5em !important;
 
 </br>
 
+```{r}
+#| echo: false
+op <- options()
+options(scipen=5, width=300)
+```
+
 ## 0
 
 **Import the JHS data.**
@@ -122,21 +128,21 @@ summary(m1)
 
 `FULL MODEL`
 
-<div style="color: #6D5FB0; background-color: #E5E9FF; border: 1px solid #9083D3; padding: 10px; margin: 0px;">
+<!--
+<div style="color: #6D5FB0; background-color: #E5E9FF; border: 1px solid #9083D3; padding: 5px; margin: 0px;">
+-->
 
-$$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 0.03(weight) - 0.01(HTN:weight) + 0.002(HDL_{norm}:weight) - 0.01(HDL_{high}:weight)}$$ {#eq-1A}
+$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 0.03(weight) - 0.01(HTN:weight) + 0.002(HDL_{norm}:weight) - 0.01(HDL_{high}:weight)}$
 
+<!--
 </div>
-
-</br>
+-->
 
 `COMMENTS`
 
 The full model predicts Diabetes significantly better than the intercept only (reduced) model.
 
 HDL is NOT a significant predictor of Diabetes & neither is it's interaction with weight.
-
-</br>
 
 </br>
 
@@ -173,8 +179,6 @@ There is sufficient evidence to suggest that the interaction between hypertensio
 
 </br>
 
-</br>
-
 **1C.  Perform the appropriate hypothesis test to determine if the interaction between fasting HDL categorization and weight (*HDL:weight*)is significant. Test at the $\alpha=0.05$ level.**
 
 ```{r}
@@ -208,8 +212,6 @@ There is NOT sufficient evidence to suggest that the relationship between *Diabe
 
 </br>
 
-</br>
-
 **1D.  Create the following models (i.e., plug in the following values and algebraically simplify): (1) weight of 70 kg, (2) weight of 90 kg, and (3) weight of 110 kg.  Remember to report the resulting models.**
 
 $\small{\text{***Displaying rounded coefficients in models below, but used un-rounded values for calculations on the back end}}$
@@ -237,8 +239,6 @@ $$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}
 $$\small{ln \left( \frac{\pi}{1-\pi} \right) = -7.4 + 0.04(age) - 0.6(HDL_{norm}) + 0.36(HDL_{high}) + 2.12(HTN) + 3.54 - 1.29(HTN) + 0.23(HDL_{norm}) - 1.08(HDL_{high})}$$
 
 $$\small{ln \left( \frac{\pi}{1-\pi} \right) = -3.870 + 0.042(age) - 0.372(HDL_{norm}) - 0.702(HDL_{high}) + 0.831(HTN)}$$ {#eq-1D-3}
-
-</br>
 
 </br>
 
@@ -278,8 +278,6 @@ Models[-1,] %>%
 
 </br>
 
-</br>
-
 **1F.  Provide brief interpretations of the odds ratios found in one model (your choice) in 1e.**
 
 Regardless of weight:
@@ -315,15 +313,13 @@ For participants who weighed 110 kg (see @eq-1D-3 for the model):
   
 </br>
 
-</br>
-
 **1G.  Construct an appropriate data visualization to help with explaining the model results. Diabetic status should be on the y-axis, age should be on the x-axis, and use the regression lines constructed in 1d.**
 
 ```{r}
 #| eval: false
 #| fig-align: left
-#| out-width: 90%
-#| fig-asp: 0.5
+#| out-width: 100%
+#| fig-asp: 0.55
 #| fig-dpi: 300
 library(fastDummies)
 JHS1 <- JHS1 %>%
@@ -347,21 +343,21 @@ JHS1 %>%
   geom_line(aes(y=p_110kg), color = "#C71585", linewidth = 0.6, linetype = 1) +
   labs(x = "Age", y = "Probability of Diabetes") +
   facet_grid(HTN2 ~ HDL2) +
-  theme_bw(base_size = 5.5) +
+  theme_bw(base_size = 6.5) +
   theme(title=element_text(face="bold"), legend.position="none")
 ```
 
-<div style="color: #C71585; background-color: #FEEAF2; border: 1px solid #C71585; padding: 0px; margin-left: 50px; margin-right: 175px; margin-top: 2px; margin-bottom: 2px;"> $$\large{\text{weight = 110 kg}}$$ </div>
+<div style="color: #C71585; background-color: #FEEAF2; border: 1px solid #C71585; padding: 0px; margin-left: 53px; margin-right: 30px; margin-top: 1px; margin-bottom: 1px;"> $$\large{\text{weight = 110 kg}}$$ </div>
 
-<div style="color: #FA962D; background-color: #FFF5F0; border: 1px solid #FA962D; padding: 0px; margin-left: 50px; margin-right: 175px; margin-top: 2px; margin-bottom: 2px;"> $$\large{\text{weight = 90 kg}}$$ </div>
+<div style="color: #FA962D; background-color: #FFF5F0; border: 1px solid #FA962D; padding: 0px; margin-left: 53px; margin-right: 30px; margin-top: 1px; margin-bottom: 1px;"> $$\large{\text{weight = 90 kg}}$$ </div>
 
-<div style="color: #00BBA0; background-color: #E9FFF9; border: 1px solid #00BBA0; padding: 0px; margin-left: 50px; margin-right: 175px; margin-top: 2px; margin-bottom: 2px;"> $$\large{\text{weight = 70 kg}}$$ </div>
+<div style="color: #00BBA0; background-color: #E9FFF9; border: 1px solid #00BBA0; padding: 0px; margin-left: 53px; margin-right: 30px; margin-top: 1px; margin-bottom: 1px;"> $$\large{\text{weight = 70 kg}}$$ </div>
 
 ```{r}
 #| echo: false
 #| fig-align: left
-#| out-width: 90%
-#| fig-asp: 0.5
+#| out-width: 100%
+#| fig-asp: 0.55
 #| fig-dpi: 300
 library(fastDummies)
 JHS1 <- JHS1 %>%
@@ -385,7 +381,7 @@ JHS1 %>%
   geom_line(aes(y=p_110kg), color = "#C71585", linewidth = 0.6, linetype = 1) +
   labs(x = "Age", y = "Probability of Diabetes") +
   facet_grid(HTN2 ~ HDL2) +
-  theme_bw(base_size = 5.5) +
+  theme_bw(base_size = 6.5) +
   theme(title=element_text(face="bold"), legend.position="none")
 ```
 
@@ -419,8 +415,6 @@ logit$(P[Y\le \text{Pre-Diabetic}])$ = 6.960 + 0.051(age) - 0.296(HDLNormal) - 0
 
 </br>
 
-</br>
-
 **2B.  Which predictors, if any, are significant predictors of diabetic status?**
 
 ```{r}
@@ -431,16 +425,12 @@ All predictors are significant predictors of diabetic status.
 
 </br>
 
-</br>
-
 **2C.  Find the odds ratios and corresponding 95% CIs for the predictors.**
 
 ```{r}
 OR = round(exp(coefficients(m2)), 2)
 cbind(OR, round(exp(confint(m2)), 2))
 ```
-
-</br>
 
 </br>
 
@@ -473,28 +463,108 @@ For a one lb increase in $\text{weight}$, the odds in favor of those who are $\t
 **3A.  Using nominal/multinomial logistic regression, model diabetic status (*diab3cat*; 0=non-diabetic, 1=pre-diabetic, 2=diabetic) as a function of age (*age*; years), weight (*weight*; kg), hypertension status (*HTN*; 0=normotensive, 1=hypertensive), and fasting HDL categorization (*hdl3cat*; 0=low, 1=normal, 2=high). Remember to report the resulting model.**
 
 ```{r}
+# subset data & removed incomplete cases
+JHS3 <- JHS %>% select(diab3cat, age, weight, HTN, hdl3cat) %>% na.omit()
 
+# factored variables diab3cat, HTN, & hdl3cat
+JHS3$Diabetes <- factor(JHS3$diab3cat, levels=c(0,1,2), labels=c("Non-Diabetic","Pre-Diabetic","Diabetic"))
+JHS3$HTN <- factor(JHS3$HTN, levels=c(0,1), labels=c("Normotensive","Hypertensive"))
+JHS3$HDL <- factor(JHS3$hdl3cat, levels=c(0,1,2), labels=c("Low","Normal","High"))
+
+# nominal logistic regression model
+m3 <- nnet::multinom(Diabetes ~ age + HDL + HTN + weight, data=JHS3)
+summary(m3, digits=3)
 ```
+
+`MODELS`
+
+$ln(\frac{\pi_{\small{Pre-Diabetic}}}{\pi_{\small{Non-Diabetic}}}) \text{ = -5.10 + 0.052(age) - 0.176(HDL}_{\small{Normal}}\text{) - 0.514(HDL}_{\small{High}}\text{) + 0.312(HTN}_{\small{Hypertensive}}\text{) + 0.023(weight)}$
+
+$ln(\frac{\pi_{\small{Diabetic}}}{\pi_{\small{Non-Diabetic}}}) \text{ = -8.34 + 0.069(age) - 0.493(HDL}_{\small{Normal}}\text{) - 0.774(HDL}_{\small{High}}\text{) + 1.117(HTN}_{\small{Hypertensive}}\text{) + 0.035(weight)}$
 
 </br>
 
 **3B.  Which predictors, if any, are significant predictors of diabetic status?**
 
 ```{r}
+# global significance
+car::Anova(m3, type = 3)
 
+
+# term significance (by model)
+z <- summary(m3)$coefficients/summary(m3)$standard.errors
+pval <- t((1 - pnorm(abs(z)))*2)
+
+round(pval, 4) %>%
+  as.data.frame() %>%
+  mutate(TERM = rownames(pval)) %>%
+  pivot_longer(cols = !TERM, names_to = "MODEL", values_to = "PVAL") %>%
+  mutate(' ' = ifelse(PVAL < 0.001, '***', 
+                      ifelse(PVAL < 0.01, '**',
+                             ifelse(PVAL < 0.05, '*','')))) %>%
+  as.data.frame() %>%
+  relocate(MODEL, .before = TERM) %>%
+  arrange(MODEL)
 ```
+
+`Results`
+
+Globally, all variables are significant predictors of diabetic status (p<0.05 $\forall$ vars).
+
+This holds true $\forall$ vars when comparing $\text{Diabetic}$ to $\text{Non-Diabetic}$.
+
+This also holds true for vars: age, HTN, and weight, when comparing $\text{Pre-Diabetic}$ to $\text{Non-Diabetic}$. 
+
+It does NOT hold true for all terms of variable HDL when comparing $\text{Pre-Diabetic}$ to $\text{Non-Diabetic}$. 
+
+- HDLNormal is NOT significant (p=0.11)
+- HDLHigh is significant (p<0.05)
 
 </br>
 
 **3C.  Find the odds ratios and corresponding 95% CIs for the predictors.**
 
 ```{r}
+# odds ratios
+round(exp(coefficients(m3)), 2)
 
+# 95% CIs
+round(exp(confint(m3)), 2)
 ```
 
 </br>
 
 **3D.  Provide brief interpretations of the odds ratios found in 3c.**
+
+`Continuous Predictors`
+
+age
+
+- For a one year increase in age, the odds of being Pre-Diabetic, as compared to being Non-Diabetic, are increased by 5%.
+- For a one year increase in age, the odds of being Diabetic, as compared to being Non-Diabetic, are increased by 7%.
+
+weight
+
+- For a 1 lb increase in weight, the odds of being Pre-Diabetic, as compared to being Non-Diabetic, are increased by 2%.
+- For a 1 lb increase in weight, the odds of being Diabetic, as compared to being Non-Diabetic, are increased by 4%.
+
+`Categorical Predictors`
+
+HTN
+
+- As compared to someone who is Normotensive, someone who is Hypertensive has a 37% increase in the odds of being Pre-Diabetic as compared to being Non-Diabetic.
+- As compared to someone who is Normotensive, someone who is Hypertensive has a 206% increase in the odds of being Diabetic as compared to being Non-Diabetic.
+- As compared to being Non-Diabetic, those that are Hypertensive have increased odds of Diabetes.
+
+HDL
+
+- As compared to someone with Low HDL, someone with Normal HDL has a 16% decrease in the odds of being Pre-Diabetic as compared to being Non-Diabetic.
+- As compared to someone with Low HDL, someone with Normal HDL has a 39% decrease in the odds of being Diabetic as compared to being Non-Diabetic.
+- As compared to someone with Low HDL, someone with High HDL has a 40% decrease in the odds of being Pre-Diabetic as compared to being Non-Diabetic.
+- As compared to someone with Low HDL, someone with High HDL has a 54% decrease in the odds of being Diabetic as compared to being Non-Diabetic.
+- As compared to being Non-Diabetic, those with increased levels of HDL have decreased odds of Diabetes.
+
+</br>
 
 </br>
 
@@ -517,6 +587,8 @@ For a one lb increase in $\text{weight}$, the odds in favor of those who are $\t
 ```{r}
 
 ```
+
+</br>
 
 </br>
 

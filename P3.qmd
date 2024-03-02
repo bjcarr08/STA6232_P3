@@ -452,7 +452,7 @@ For any fixed response, the estimated odds of those with $\text{Hypertension}$ i
 
 `weight`
 
-For a one lb increase in $\text{weight}$, the odds in favor of those who are $\text{Pre-Diabetic}$ or lower, as compared to those who are $\text{Diabetic}$, are increased by [$100*(e^{0.0246}-1)$] = 2.5%.
+For a 1 kg increase in $\text{weight}$, the odds in favor of those who are $\text{Pre-Diabetic}$ or lower, as compared to those who are $\text{Diabetic}$, are increased by [$100*(e^{0.0246}-1)$] = 2.5%.
 
 </br>
 
@@ -545,8 +545,8 @@ age
 
 weight
 
-- For a 1 lb increase in weight, the odds of being Pre-Diabetic, as compared to being Non-Diabetic, are increased by 2%.
-- For a 1 lb increase in weight, the odds of being Diabetic, as compared to being Non-Diabetic, are increased by 4%.
+- For a 1 kg increase in weight, the odds of being Pre-Diabetic, as compared to being Non-Diabetic, are increased by 2%.
+- For a 1 kg increase in weight, the odds of being Diabetic, as compared to being Non-Diabetic, are increased by 4%.
 
 `Categorical Predictors`
 
@@ -576,16 +576,55 @@ HDL
 
 **4B. Use the appropriate hypothesis test to determine if we should use model 2a or model 3a when reporting on diabetic status in terms of non-diabetic, pre-diabetic, and diabetic.**
 
-```{r}
+Since model 2a uses ordinal logistic regression, we will need to check if it meets the assumption of proportional odds.
 
+```{r}
+brant::brant(m2)
 ```
+
+Omnibus pvalue is less than alpha (p=0.01), which means we reject the null. 
+
+There is enough evidence to suggest that the assumption of proportional odds does not hold.
+
+Because model 2a does not meet the assumptions, we should use model 3a. 
 
 </br>
 
 **4 Extra credit! Construct a data visualization for the model chosen in 4b to help explain the model's results.**
 
-```{r}
+Weight was held constant for all models using the median (88kg).
 
+```{r}
+#| fig-align: left
+#| out-width: 100%
+#| fig-asp: 0.6
+#| fig-dpi: 300
+weightMedian = median(JHS3$weight)
+ageMin = ceiling(min(JHS3$age))
+ageMax = floor(max(JHS3$age))
+ageN = length(ageMin:ageMax)
+
+newData <- data.frame(HTN = rep(c("Normotensive", "Hypertensive"), each = 3*ageN),
+                      HDL = rep(rep(c("Low","Normal","High"), 2), each = ageN),
+                      age = rep(ageMin:ageMax, 6),
+                      weight = rep(weightMedian, 6*ageN))
+
+newData <- cbind(newData, predict(m3, newdata = newData, type = "probs"))
+
+newData %>%
+  mutate(HDL = ifelse(HDL=="Low", "Low HDL", ifelse(HDL=="Normal", "Normal HDL", "High HDL"))) %>%
+  mutate(HDL = factor(HDL, levels = c("Low HDL","Normal HDL","High HDL")),
+         HTN = factor(HTN, levels = c("Normotensive","Hypertensive"))) %>%
+  group_by(HTN, HDL) %>% 
+  pivot_longer(cols = c("Non-Diabetic","Pre-Diabetic","Diabetic"), names_to = "Diabetes", values_to = "Probability") %>%
+  mutate(Diabetes = factor(Diabetes, levels = c("Non-Diabetic","Pre-Diabetic","Diabetic"))) %>%
+  ggplot(aes(x=age, y=Probability, color=HDL)) + 
+  scale_color_manual(values = c("#00BBA0","#FA962D","#C71585")) +
+  geom_line() +
+  labs(x = "Age", y = "Probability") +
+  facet_grid(HTN ~ Diabetes) +
+  theme_bw(base_size = 8) +
+  theme(title=element_text(face="bold"), legend.position="top")
 ```
 
 </br>

@@ -108,7 +108,7 @@ JHS <- haven::read_sas("analysis1.sas7bdat")
 JHS1 <- JHS %>% select(Diabetes, age, weight, HTN, hdl3cat) %>% na.omit()
 
 # factored variable hdl3cat
-JHS1$HDL <- factor(JHS1$hdl3cat, levels=c(0,1,2), labels=c("low","norm","high"))
+JHS1$HDL <- factor(JHS1$hdl3cat, levels=c(0,1,2), labels=c("Low","Normal","High"))
 
 # full model
 m1 <- glm(Diabetes ~ age + HDL + HTN + weight + weight:HTN + weight:HDL, data=JHS1, family="binomial"(link="logit"))
@@ -554,7 +554,6 @@ HTN
 
 - As compared to someone who is Normotensive, someone who is Hypertensive has a 37% increase in the odds of being Pre-Diabetic as compared to being Non-Diabetic.
 - As compared to someone who is Normotensive, someone who is Hypertensive has a 206% increase in the odds of being Diabetic as compared to being Non-Diabetic.
-- As compared to being Non-Diabetic, those that are Hypertensive have increased odds of Diabetes.
 
 HDL
 
@@ -562,7 +561,6 @@ HDL
 - As compared to someone with Low HDL, someone with Normal HDL has a 39% decrease in the odds of being Diabetic as compared to being Non-Diabetic.
 - As compared to someone with Low HDL, someone with High HDL has a 40% decrease in the odds of being Pre-Diabetic as compared to being Non-Diabetic.
 - As compared to someone with Low HDL, someone with High HDL has a 54% decrease in the odds of being Diabetic as compared to being Non-Diabetic.
-- As compared to being Non-Diabetic, those with increased levels of HDL have decreased odds of Diabetes.
 
 </br>
 
@@ -571,6 +569,8 @@ HDL
 ## 4
 
 **4A.  Consider the proportional odds assumption for ordinal logistic regression. Explain the proportional odds assumption to your supervisor, who is not a statistician or data scientist.**
+
+Ordinal logistic regression is used for predicting outcome variables with more than 1 level. It assumes that the change in odds is consistent when moving between the levels. If the assumption holds true, the change in odds is not affected by the outcome levels. The means that the slopes will be the same for each outcome level making modeling and analysis much simpler, allowing us to make more general statements about the predictor variables affect on the overall odds. When plotting prediction lines, they should be parallel at each outcome level. If the assumption doesn't hold true, it suggests that several predictors may be involved at different outcome levels, the slopes will be different for each level. When plotting prediction lines, they will not be parallel at each outcome level. When the assumption is not met, nominal logistic regression must be used instead.
 
 </br>
 
@@ -597,34 +597,49 @@ Weight was held constant for all models using the median (88kg).
 ```{r}
 #| fig-align: left
 #| out-width: 100%
-#| fig-asp: 0.6
+#| fig-asp: 0.75
 #| fig-dpi: 300
 weightMedian = median(JHS3$weight)
 ageMin = ceiling(min(JHS3$age))
 ageMax = floor(max(JHS3$age))
 ageN = length(ageMin:ageMax)
 
-newData <- data.frame(HTN = rep(c("Normotensive", "Hypertensive"), each = 3*ageN),
+simData <- data.frame(HTN = rep(c("Normotensive", "Hypertensive"), each = 3*ageN),
                       HDL = rep(rep(c("Low","Normal","High"), 2), each = ageN),
                       age = rep(ageMin:ageMax, 6),
                       weight = rep(weightMedian, 6*ageN))
 
-newData <- cbind(newData, predict(m3, newdata = newData, type = "probs"))
+simData <- cbind(simData, predict(m3, newdata = simData, type = "probs"))
 
-newData %>%
+simData <- simData %>%
   mutate(HDL = ifelse(HDL=="Low", "Low HDL", ifelse(HDL=="Normal", "Normal HDL", "High HDL"))) %>%
   mutate(HDL = factor(HDL, levels = c("Low HDL","Normal HDL","High HDL")),
          HTN = factor(HTN, levels = c("Normotensive","Hypertensive"))) %>%
   group_by(HTN, HDL) %>% 
   pivot_longer(cols = c("Non-Diabetic","Pre-Diabetic","Diabetic"), names_to = "Diabetes", values_to = "Probability") %>%
-  mutate(Diabetes = factor(Diabetes, levels = c("Non-Diabetic","Pre-Diabetic","Diabetic"))) %>%
-  ggplot(aes(x=age, y=Probability, color=HDL)) + 
-  scale_color_manual(values = c("#00BBA0","#FA962D","#C71585")) +
-  geom_line() +
-  labs(x = "Age", y = "Probability") +
-  facet_grid(HTN ~ Diabetes) +
-  theme_bw(base_size = 8) +
-  theme(title=element_text(face="bold"), legend.position="top")
+  mutate(Diabetes = factor(Diabetes, levels = c("Non-Diabetic","Pre-Diabetic","Diabetic")))
+
+  ggplot(simData, aes(x=age, y=Probability, color=HDL)) + 
+    scale_color_manual(values = c("#00BBA0","#FA962D","#C71585")) +
+    geom_line() +
+    labs(x = "Age", y = "Probability") +
+    facet_grid(HTN ~ Diabetes) +
+    theme_bw(base_size = 8) +
+    theme(title=element_text(face="bold"), legend.position="top")
+```
+
+```{r}
+#| fig-align: left
+#| out-width: 100%
+#| fig-asp: 0.75
+#| fig-dpi: 300
+  ggplot(simData, aes(x=age, y=Probability, color=Diabetes)) + 
+    scale_color_manual(values = c("#00BBA0","#FA962D","#C71585")) +
+    geom_line() +
+    labs(x = "Age", y = "Probability") +
+    facet_grid(HTN ~ HDL) +
+    theme_bw(base_size = 8) +
+    theme(title=element_text(face="bold"), legend.position="top")
 ```
 
 </br>
@@ -634,3 +649,13 @@ newData %>%
 ## 5
 
 **Required for graduate students / extra credit for undergraduate students: Write a paragraph to summarize the analyses in this project, written such that a non-quantitative person could understand.**
+
+Using the JHS data set we built several regression models using diabetic status as the outcome variable and for the predictor variables we used: age, weight, hypertension status, and fasting HDL categorization. 198 incomplete cases were omitted from analysis leaving the total number of observations to be 2455.
+
+The first built was a binomial logistic regression model with interactions. In this model the outcome variable only has 2 levels, Non-Diabetic and Diabetic. We are modeling the affects that age, weight, HDL, HTN, and the interactions between weight and both HTN and HDL all have on the outcome variable. It was found that the predictor HDL does not have a significant affect on the outcome and neither does it's interaction with weight.
+
+The second built was an ordinal logistic regression model. In this model the outcome variable has 3 ordered levels: Non-Diabetic, Pre-Diabetic, and Diabetic. We are modeling the affects that age, weight, HDL, and HTN have on the outcome variable. To use this model, we needed to have meet the assumption of proportional odds but did not (described above in question 4).
+
+The third built was a nominal logistic regression model. In this model the outcome variable has 3 NON-ordered levels: Non-Diabetic, Pre-Diabetic, and Diabetic. We are again modeling the affects that age, weight, HDL, and HTN have on the outcome variable. This regression produces 2 models. It was found that overall, all predictors have a significant affect on the outcome variable, but when looking at predictors by category and outcome level, all but 1 combination, Pre-Diabetic and Normal HDL, had a significant affect on the outcome. This model shows that, as compared to someone who is Normotensive, someone who is Hypertensive has a 206% increase in the odds of being Diabetic as compared to being Non-Diabetic. It also shows that, as compared to being Non-Diabetic, those with increased levels of HDL have decreased odds of Diabetes.
+
+</br>
